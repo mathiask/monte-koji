@@ -1,6 +1,6 @@
 //(function() {
 
-  // Board is an object indexed a...g with a pair of numbers indicating "our" played cards and 
+  // Board is an object indexed a...g with a pair of numbers indicating "our" played cards and
   // "their" played cards for the fiven Geisha.
   function initialPosition() {
     return {a: [0,0], b: [0,0], c: [0,0], d: [0,0], e: [0,0], f: [0,0], g: [0,0]};
@@ -9,19 +9,30 @@
   let geisha = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
   let geishaValues = {a: 2, b: 2, c: 2, d: 3, e: 3, f: 4, g: 5};
 
-  // Compute heap for position and hand, where a hand is a list of geisha keys, e.g. ['a', 'b', 'b', 'g']
+  // Compute heap for position and hand, where a hand is of the form:
+  // { active: a list of geisha keys, e.g. ['a', 'b', 'b', 'g']
+  //   resevered: an optional geisha key of a card reserved for final addition to tthe played cards
+  //   discarded: an optional list of two discarded cards
+  // }
   function heap(pos, hand) {
     let result = {};
     for (k in geishaValues) {
       let p = pos[k];
-      result[k] = geishaValues[k] - p[0] - p[1]; 
+      result[k] = geishaValues[k] - p[0] - p[1];
     }
-    for (k of hand) {
+    for (k of hand.active) {
       result[k]--;
+    }
+    if (hand.reserved) {
+      result[hand.reserved]--;
+    }
+    if (hand.discarded) {
+      result[hand.discarded[0]]--;
+      result[hand.discarded[1]]--;
     }
     return result;
   }
-  
+
   function size(heap) {
     let size = 0;
     for (k in heap) {
@@ -37,11 +48,11 @@
       let count = heap[k];
       if (index < count) {
         heap[k]--;
-        return k;        
+        return k;
       }
       index -= count;
     }
-    throw "Drawing beyond end of heap (should never happen)."
+    throw "Drawing beyond end of heap (should never happen).";
   }
 
   let hk = function() {
