@@ -11,9 +11,10 @@
 
   // Compute heap for position and hand, where a hand is of the form:
   // { active: a list of geisha keys, e.g. ['a', 'b', 'b', 'g']
-  //   resevered: an optional geisha key of a card reserved for final addition to tthe played cards
   //   discarded: an optional list of two discarded cards
   // }
+  // The reserved card is not represented as we play it open on the board
+  // (the random rollout opponent ignores it anyway.)
   function heap(pos, hand) {
     let result = {};
     for (k in geishaValues) {
@@ -22,9 +23,6 @@
     }
     for (k of hand.active) {
       result[k]--;
-    }
-    if (hand.reserved) {
-      result[hand.reserved]--;
     }
     if (hand.discarded) {
       result[hand.discarded[0]]--;
@@ -54,6 +52,8 @@
     }
     throw "Drawing beyond end of heap (should never happen).";
   }
+
+  
 
   let hk = function() {
     return 'TBD...';
