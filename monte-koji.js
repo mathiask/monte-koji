@@ -145,7 +145,8 @@
 
   // options is an array of choice functions (corresponding to the game, tokens)
   function random_move(player, position, hand, options) {
-
+    let move = options.splice(rnd(options.length), 1);
+    return move[0](player, position, hand);
   }
 
   // -------------------- main -------------------
