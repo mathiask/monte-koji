@@ -39,7 +39,7 @@
     return size;
   }
 
-  // Draw a random card from heap, chaning the given heap
+  // Draw a random card from heap, chaning the given heap in
   function draw(heap) {
     let index = rnd(size(heap));
     for (k in heap) {
@@ -71,7 +71,7 @@
   function removeCard(hand, card) {
     hand.active.splice(hand.active.indexOf(card), 1);
   }
-  
+
   function move_discard(_player, _position, hand, cards) {
     hand.discarded = cards;
     removeCard(hand, cards[0]);
@@ -102,6 +102,7 @@
     removeCard(hand, card4);
   }
 
+
   // -------------------- Random player choice functions -------------------
 
   // All choice functions modify position, hand.
@@ -116,14 +117,14 @@
     let cards = putNCardsToFrontOfHand(hand, 2);
     move_discard(player, position, hand, cards);
     return `Discarding ${cards[0]} and ${cards[1]}`;
-  }  
+  }
 
   // returns the n rearranged cards
   function putNCardsToFrontOfHand(hand, n) {
     let a = hand.active,
         l = a.length;
     for (let i = 0; i < n; i++) {
-      a.splice(0, 0, ...a.splice(i + rnd(l - i), 1));  
+      a.splice(0, 0, ...a.splice(i + rnd(l - i), 1));
     }
     return a.slice(0, n);
   }
@@ -131,22 +132,38 @@
   function random_offer3(player, position, hand) {
     let offer = putNCardsToFrontOfHand(hand, 3);
     move_offer3(player, position, hand, offer);
-    return `Offering ${offer.join(' + ')}`
+    return `Offering ${offer.join(' + ')}`;
   }
 
 
   function random_offer22(player, position, hand) {
     let offer = putNCardsToFrontOfHand(hand, 4);
     move_offer22(player, position, hand, offer);
-    return `Offering ${offer.slice(0, 2).join('+')} and ${offer.slice(2, 4).join('+')}`
+    return `Offering ${offer.slice(0, 2).join('+')} and ${offer.slice(2, 4).join('+')}`;
   }
-
-
 
   // options is an array of choice functions (corresponding to the game, tokens)
   function random_move(player, position, hand, options) {
     let move = options.splice(rnd(options.length), 1);
     return move[0](player, position, hand);
+  }
+
+
+  // -------------------- play one game to its conclusion ----------------
+
+  // modifies all of its arguments (apart from player)
+  function rollout(player, position, hands, optionsForPlayers, drawPile) {
+    while (optionsForPlayers[player].length > 0) {
+      let hand = hands[player],
+          options = optionsForPlayers[player];
+      hands[player].active.unshift(drawFromPile(drawPile));
+      console.log(`[${player}]: ${random_move(player, position, hand, options)}`);
+      player = 1 - player;
+    }
+  }
+
+  function drawFromPile(pile) {
+    return pile.splice(rnd(pile.length), 1)[0];
   }
 
   // -------------------- main -------------------
