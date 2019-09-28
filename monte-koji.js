@@ -53,7 +53,46 @@
     throw "Drawing beyond end of heap (should never happen).";
   }
 
+  // The four following moves all modify position and hand.
+  // player is always 0 (us) or 1 (them)
+
+  function move_reserveCard(player, position, hand, card) {
+    position[card][player]++;
+    removeCard(hand, card);
+  }
+
+  function removeCard(hand, card) {
+    hand.active.splice(hand.active.indexOf(card), 1);
+  }
   
+  function move_discard(_player, _position, hand, card1, card2) {
+    hand.discarded = [card1, card2];
+    removeCard(hand, card1);
+    removeCard(hand, card2);
+  }
+
+  // opponent chose card1
+  function move_offer3(player, position, hand, card1, card2, card3) {
+    position[card1][1-player]++;
+    position[card2][player]++;
+    position[card3][player]++;
+    removeCard(hand, card1);
+    removeCard(hand, card2);
+    removeCard(hand, card3);
+  }
+
+  // opponent chose card1 and card2
+  function move_offer2and2(player, position, hand, card1, card2, card3, card4) {
+    position[card1][1-player]++;
+    position[card2][1-player]++;
+    position[card3][player]++;
+    position[card4][player]++;
+    removeCard(hand, card1);
+    removeCard(hand, card2);
+    removeCard(hand, card3);
+    removeCard(hand, card4);
+  }
+
 
   let hk = function() {
     return 'TBD...';
