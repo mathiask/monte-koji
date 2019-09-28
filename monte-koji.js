@@ -110,13 +110,13 @@
   function random_reserve(player, position, hand) {
     let card = hand.active[rnd(hand.active.length)];
     move_reserve(player, position, hand, card);
-    return `Reserve ${card}`;
+    return `reserve:${card}`;
   }
 
   function random_discard(player, position, hand) {
     let cards = putNCardsToFrontOfHand(hand, 2);
     move_discard(player, position, hand, cards);
-    return `Discarding ${cards[0]} and ${cards[1]}`;
+    return `discard:${cards.sort().join('')}`;
   }
 
   // returns the n rearranged cards
@@ -132,14 +132,14 @@
   function random_offer3(player, position, hand) {
     let offer = putNCardsToFrontOfHand(hand, 3);
     move_offer3(player, position, hand, offer);
-    return `Offering ${offer.join(' + ')}`;
+    return `offer3:${offer.sort().join('')}`;
   }
 
 
   function random_offer22(player, position, hand) {
     let offer = putNCardsToFrontOfHand(hand, 4);
     move_offer22(player, position, hand, offer);
-    return `Offering ${offer.slice(0, 2).join('+')} and ${offer.slice(2, 4).join('+')}`;
+    return `offer22:${[offer.slice(0, 2).sort().join(''), offer.slice(2, 4).sort().join('')].sort().join()}`;
   }
 
   // options is an array of choice functions (corresponding to the game, tokens)
@@ -157,7 +157,8 @@
       let hand = hands[player],
           options = optionsForPlayers[player];
       hands[player].active.unshift(drawFromPile(drawPile));
-      console.log(`[${player}]: ${random_move(player, position, hand, options)}`);
+      // console.log(`[${player}]: ${random_move(player, position, hand, options)}: ${result(position)}`);
+      random_move(player, position, hand, options);
       player = 1 - player;
     }
   }
@@ -166,11 +167,78 @@
     return pile.splice(rnd(pile.length), 1)[0];
   }
 
+  // Player (0 or 1) that has more points, or when equal, more geishas.
+  // +1 : player 0 wins
+  // 0  : draw
+  // -1 : player 1 wins
+  function result(position) {
+    let geishaDelta = 0,
+        pointDelta = 0;
+    for (k in geishaValues) {
+      let p = position[k];
+      let s = Math.sign(p[0] - p[1]);
+      geishaDelta += s;
+      pointDelta += s * geishaValues[k];
+    }
+    return pointDelta ? Math.sign(pointDelta) : Math.sign(geishaDelta);
+  }
+
+  // -------------------- Monte-Carlo move choice -------------------
+
+  // position contains drawn card, player (AI) is always 0
+  function mc_move(position, hand, opponentHandSize, optionsForPlayers, rollouts) {
+    let stats = new Map();
+    while(rollouts-- > 0) {
+      mc_rollout(stats, positionCopy(position), handClone(hand), opponentHandSize, 
+        [optionsForPlayers[0].slice(), optionsForPlayers[1].slice()]);
+    }
+    return bestStats(stats);
+  }
+
+  function positionCopy(pos) {
+    let newPos = {};
+    for (let k in pos) {
+      newPos[k] = pos[k].slice();
+    }
+    return newPos
+  }
+
+  function handClone(hand) {
+    return {
+      active: hand.active.slice(),
+      discarded: hand.discarded ? hand.discarded.slice() : undefined
+    };
+  }
+
+  function mc_rollout(stats, position, hand, opponentHandSize, optionsForPlayers) {
+    let hp = heap(position, hand),
+        opponentHand = [],
+        pile = [];
+    for (var i = 0; i < opponentHandSize; i++) {
+      opponentHand.unshift(draw(hp));
+    }
+    while(size(hp) > 1) {
+      pile.unshift(draw(hp));
+    }
+    let move = random_move(0, position, hand, optionsForPlayers[0]);
+    rollout(1, position, [hand, {active: opponentHand}], optionsForPlayers, pile);
+    let r = result(position),
+        stat = stats.get(move);
+    stats.set(move, [(stat ? stat[0] : 0) + 1, (stat ? stat[1] : 0) + r]);
+  }
+
+  function bestStats(statsMap) {
+    console.log(statsMap);
+    let best;
+    for (let [k, v] of statsMap.entries()) {
+      if (!best || best[1] < v[1] / v[0]) {
+        best = [k, v[1] / v[0]];
+      }
+    }
+    console.log(best);
+    return best[0];
+  }
+
   // -------------------- main -------------------
 
-  let hk = function() {
-    return 'TBD...';
-  };
-
-  window.hk = hk;
 //})();
