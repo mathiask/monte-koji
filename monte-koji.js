@@ -41,7 +41,7 @@
 
   // Draw a random card from heap, chaning the given heap
   function draw(heap) {
-    let index = Math.floor(Math.random() * size(heap));
+    let index = rnd(size(heap));
     for (k in heap) {
       let count = heap[k];
       if (index < count) {
@@ -53,10 +53,17 @@
     throw "Drawing beyond end of heap (should never happen).";
   }
 
+  // integer random from [0..n)
+  function rnd(n) {
+    return Math.floor(Math.random() * n);
+  }
+
+  // -------------------- Move implementations -------------------
+
   // The four following moves all modify position and hand.
   // player is always 0 (us) or 1 (them)
 
-  function move_reserveCard(player, position, hand, card) {
+  function move_reserve(player, position, hand, card) {
     position[card][player]++;
     removeCard(hand, card);
   }
@@ -65,14 +72,15 @@
     hand.active.splice(hand.active.indexOf(card), 1);
   }
   
-  function move_discard(_player, _position, hand, card1, card2) {
-    hand.discarded = [card1, card2];
-    removeCard(hand, card1);
-    removeCard(hand, card2);
+  function move_discard(_player, _position, hand, cards) {
+    hand.discarded = cards;
+    removeCard(hand, cards[0]);
+    removeCard(hand, cards[1]);
   }
 
-  // opponent chose card1
-  function move_offer3(player, position, hand, card1, card2, card3) {
+  // opponent chose cards[0]
+  function move_offer3(player, position, hand, cards) {
+    let [card1, card2, card3] = cards;
     position[card1][1-player]++;
     position[card2][player]++;
     position[card3][player]++;
@@ -81,8 +89,9 @@
     removeCard(hand, card3);
   }
 
-  // opponent chose card1 and card2
-  function move_offer2and2(player, position, hand, card1, card2, card3, card4) {
+  // opponent chose cards[0] and cards[1], we chose ...[2] and [3]
+  function move_offer22(player, position, hand, cards) {
+    [card1, card2, card3, card4] = cards;
     position[card1][1-player]++;
     position[card2][1-player]++;
     position[card3][player]++;
@@ -93,6 +102,53 @@
     removeCard(hand, card4);
   }
 
+  // -------------------- Random player choice functions -------------------
+
+  // All choice functions modify position, hand.
+
+  function random_reserve(player, position, hand) {
+    let card = hand.active[rnd(hand.active.length)];
+    move_reserve(player, position, hand, card);
+    return `Reserve ${card}`;
+  }
+
+  function random_discard(player, position, hand) {
+    let cards = putNCardsToFrontOfHand(hand, 2);
+    move_discard(player, position, hand, cards);
+    return `Discarding ${cards[0]} and ${cards[1]}`;
+  }  
+
+  // returns the n rearranged cards
+  function putNCardsToFrontOfHand(hand, n) {
+    let a = hand.active,
+        l = a.length;
+    for (let i = 0; i < n; i++) {
+      a.splice(0, 0, ...a.splice(i + rnd(l - i), 1));  
+    }
+    return a.slice(0, n);
+  }
+
+  function random_offer3(player, position, hand) {
+    let offer = putNCardsToFrontOfHand(hand, 3);
+    move_offer3(player, position, hand, offer);
+    return `Offering ${offer.join(' + ')}`
+  }
+
+
+  function random_offer22(player, position, hand) {
+    let offer = putNCardsToFrontOfHand(hand, 4);
+    move_offer22(player, position, hand, offer);
+    return `Offering ${offer.slice(0, 2).join('+')} and ${offer.slice(2, 4).join('+')}`
+  }
+
+
+
+  // options is an array of choice functions (corresponding to the game, tokens)
+  function random_move(player, position, hand, options) {
+
+  }
+
+  // -------------------- main -------------------
 
   let hk = function() {
     return 'TBD...';
