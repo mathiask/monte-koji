@@ -3,7 +3,7 @@
 //(function() {
 
   // Board is an object indexed a...g with a pair of numbers indicating "our" played cards and
-  // "their" played cards for the fiven Geisha.
+  // "their" played cards for the given Geisha.
   function initialPosition() {
     return {a: [0,0], b: [0,0], c: [0,0], d: [0,0], e: [0,0], f: [0,0], g: [0,0]};
   }
