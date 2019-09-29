@@ -189,7 +189,7 @@
   function mc_move(position, hand, opponentHandSize, optionsForPlayers, rollouts) {
     let stats = new Map();
     while(rollouts-- > 0) {
-      mc_rollout(stats, positionCopy(position), handClone(hand), opponentHandSize, 
+      mc_rollout(stats, positionCopy(position), handClone(hand), opponentHandSize,
         [optionsForPlayers[0].slice(), optionsForPlayers[1].slice()]);
     }
     return bestStats(stats);
@@ -217,7 +217,7 @@
         pile = [];
     if (!containsReserve(optionsForPlayers[1])) {
       let card = draw(hp);
-      move_reserve(1, position, {active:[card]}, card);      
+      move_reserve(1, position, {active:[card]}, card);
     }
     for (var i = 0; i < opponentHandSize; i++) {
       opponentHand.unshift(draw(hp));
@@ -257,7 +257,7 @@
       let p = positionCopy(position);
       move_offer3(1, p, {active: picked.slice()}, picked);
       stats.set(picked[0], rolloutForChoice(p, hand, opponentHandSize, optionsForPlayers, rollouts));
-    } 
+    }
     return bestStats(stats);
   }
 
@@ -266,7 +266,7 @@
     for(let j = 0; j < rollouts; j++) {
       let h = handClone(hand);
       h.active.unshift(draw(heap(position, hand)));
-      mc_rollout(stats, positionCopy(position), h , opponentHandSize, 
+      mc_rollout(stats, positionCopy(position), h , opponentHandSize,
         [optionsForPlayers[0].slice(), optionsForPlayers[1].slice()]);
     }
     return aggregate(stats);
@@ -290,11 +290,35 @@
       let p = positionCopy(position);
       move_offer22(1, p, {active: picked.slice()}, picked);
       stats.set(picked.slice(0, 2).join(''), rolloutForChoice(p, hand, opponentHandSize, optionsForPlayers, rollouts));
-    } 
+    }
     return bestStats(stats);
   }
 
 
-  // -------------------- main -------------------
+  // -------------------- convenience functions -------------------
 
+  function mkOff(s) {
+    return s.split('');
+  }
+
+
+  function mkHand(s) {
+    return {active: mkOff(s)};
+  }
+
+  function mkPos(us, them) {
+    let pos = initialPosition();
+    for (let i = 0; i < 2; i++) {
+      for (let k of [us, them][i].split('')) {
+        pos[k][i]++;
+      }
+    }
+    return pos;
+  }
+
+  // command string of (r)eserve, (d)iscard, offer(3), offer(2)2
+  function mkOpt(s) {
+    return s.split('').map(c =>
+      ({'r': random_reserve, 'd': random_discard, '2': random_offer22, '3': random_offer3})[c]);
+  }
 //})();
