@@ -254,18 +254,22 @@
     for (let i = 0; i < 3; i++) {
       let picked = offer3.slice();
       picked.splice(0, 0, ...picked.splice(i, 1));
-      let p = positionCopy(position),
-          st = new Map();
+      let p = positionCopy(position);
       move_offer3(1, p, {active: picked.slice()}, picked);
-      for(let j = 0; j < rollouts; j++) {
-        let h = handClone(hand);
-        h.active.unshift(draw(heap(p, hand)));
-        mc_rollout(st, positionCopy(p), h , opponentHandSize, 
-          [optionsForPlayers[0].slice(), optionsForPlayers[1].slice()]);
-      }
-      stats.set(picked[0], aggregate(st));
+      stats.set(picked[0], rolloutForChoice(p, hand, opponentHandSize, optionsForPlayers, rollouts));
     } 
     return bestStats(stats);
+  }
+
+  function rolloutForChoice(position, hand, opponentHandSize, optionsForPlayers, rollouts) {
+    let stats = new Map();
+    for(let j = 0; j < rollouts; j++) {
+      let h = handClone(hand);
+      h.active.unshift(draw(heap(position, hand)));
+      mc_rollout(stats, positionCopy(position), h , opponentHandSize, 
+        [optionsForPlayers[0].slice(), optionsForPlayers[1].slice()]);
+    }
+    return aggregate(stats);
   }
 
   function aggregate(stats) {
@@ -277,6 +281,19 @@
     }
     return [n, x];
   }
+
+  function mc_choose22(position, hand, opponentHandSize, optionsForPlayers, offer22, rollouts) {
+    let stats = new Map();
+    for (let i = 0; i < 2; i++) {
+      let picked = offer22.slice();
+      picked.splice(0, 0, ...picked.splice(i * 2, 2));
+      let p = positionCopy(position);
+      move_offer22(1, p, {active: picked.slice()}, picked);
+      stats.set(picked.slice(0, 2).join(''), rolloutForChoice(p, hand, opponentHandSize, optionsForPlayers, rollouts));
+    } 
+    return bestStats(stats);
+  }
+
 
   // -------------------- main -------------------
 
