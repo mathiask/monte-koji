@@ -59,7 +59,7 @@
     return Math.floor(Math.random() * n);
   }
 
-  // -------------------- Move implementations -------------------
+  // -------------------- Move implementations --------------------
 
   // The four following moves all modify position and hand.
   // player is always 0 (us) or 1 (them)
@@ -104,7 +104,7 @@
   }
 
 
-  // -------------------- Random player choice functions -------------------
+  // -------------------- Random player choice functions --------------------
 
   // All choice functions modify position, hand.
 
@@ -150,7 +150,7 @@
   }
 
 
-  // -------------------- play one game to its conclusion ----------------
+  // -------------------- Play one game to its conclusion --------------------
 
   // modifies all of its arguments (apart from player)
   function rollout(player, position, hands, optionsForPlayers, drawPile) {
@@ -183,7 +183,7 @@
     return pointDelta ? Math.sign(pointDelta) : Math.sign(geishaDelta);
   }
 
-  // -------------------- Monte-Carlo move choice -------------------
+  // -------------------- Monte-Carlo move choice --------------------
 
   // position contains drawn card, player (AI) is always 0
   function mc_move(position, hand, opponentHandSize, optionsForPlayers, rollouts) {
@@ -214,7 +214,7 @@
   function mc_rollout(stats, position, hand, opponentHandSize, optionsForPlayers) {
     let hp = heap(position, hand),
         opponentHand = [],
-        pile = [];
+        pile;
     if (!containsReserve(optionsForPlayers[1])) {
       let card = draw(hp);
       move_reserve(1, position, {active:[card]}, card);
@@ -222,15 +222,22 @@
     for (var i = 0; i < opponentHandSize; i++) {
       opponentHand.unshift(draw(hp));
     }
-    while(size(hp) > 1) {
-      pile.unshift(draw(hp));
-    }
+    pile = makePileFromHeap(hp);
     let move = random_move(0, position, hand, optionsForPlayers[0]);
     rollout(1, position, [hand, {active: opponentHand}], optionsForPlayers, pile);
     let r = result(position),
         stat = stats.get(move);
     stats.set(move, [(stat ? stat[0] : 0) + 1, (stat ? stat[1] : 0) + r]);
   }
+
+  function makePileFromHeap(heap) {
+    let pile = [];
+    while(size(heap) > 1) {
+      pile.unshift(draw(heap));
+    }
+    return pile;
+  }
+
 
   // does the array of options contain random_reserve
   function containsReserve(options) {
@@ -298,7 +305,7 @@
   }
 
 
-  // -------------------- convenience functions -------------------
+  // -------------------- Convenience functions --------------------
 
   function mkOff(s) {
     return s.split('');
