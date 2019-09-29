@@ -262,6 +262,9 @@
   }
 
   function rolloutForChoice(position, hand, opponentHandSize, optionsForPlayers, rollouts) {
+    if (optionsForPlayers[0].length === 0) {
+      return [1, result(position)];
+    }
     let stats = new Map();
     for(let j = 0; j < rollouts; j++) {
       let h = handClone(hand);
