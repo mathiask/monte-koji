@@ -200,7 +200,7 @@
     for (let k in pos) {
       newPos[k] = pos[k].slice();
     }
-    return newPos
+    return newPos;
   }
 
   function handClone(hand) {
@@ -247,6 +247,35 @@
     }
     console.log(best);
     return best[0];
+  }
+
+  function mc_choose3(position, hand, opponentHandSize, optionsForPlayers, offer3, rollouts) {
+    let stats = new Map();
+    for (let i = 0; i < 3; i++) {
+      let picked = offer3.slice();
+      picked.splice(0, 0, ...picked.splice(i, 1));
+      let p = positionCopy(position),
+          st = new Map();
+      move_offer3(1, p, {active: picked.slice()}, picked);
+      for(let j = 0; j < rollouts; j++) {
+        let h = handClone(hand);
+        h.active.unshift(draw(heap(p, hand)));
+        mc_rollout(st, positionCopy(p), h , opponentHandSize, 
+          [optionsForPlayers[0].slice(), optionsForPlayers[1].slice()]);
+      }
+      stats.set(picked[0], aggregate(st));
+    } 
+    return bestStats(stats);
+  }
+
+  function aggregate(stats) {
+    let n = 0,
+        x = 0;
+    for (let [_, [c, s]] of stats) {
+      n += c;
+      x += s;
+    }
+    return [n, x];
   }
 
   // -------------------- main -------------------
