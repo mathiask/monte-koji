@@ -210,10 +210,15 @@
     };
   }
 
+  // position contains drawn card, player (AI) is always 0
   function mc_rollout(stats, position, hand, opponentHandSize, optionsForPlayers) {
     let hp = heap(position, hand),
         opponentHand = [],
         pile = [];
+    if (!containsReserve(optionsForPlayers[1])) {
+      let card = draw(hp);
+      move_reserve(1, position, {active:[card]}, card);      
+    }
     for (var i = 0; i < opponentHandSize; i++) {
       opponentHand.unshift(draw(hp));
     }
@@ -225,6 +230,11 @@
     let r = result(position),
         stat = stats.get(move);
     stats.set(move, [(stat ? stat[0] : 0) + 1, (stat ? stat[1] : 0) + r]);
+  }
+
+  // does the array of options contain random_reserve
+  function containsReserve(options) {
+    return options.includes(random_reserve);
   }
 
   function bestStats(statsMap) {
