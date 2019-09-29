@@ -176,7 +176,7 @@
         pointDelta = 0;
     for (k in geishaValues) {
       let p = position[k];
-      let s = Math.sign(p[0] - p[1]);
+      let s = Math.sign(p[0] - p[1]) || p[2] || 0;
       geishaDelta += s;
       pointDelta += s * geishaValues[k];
     }
@@ -306,11 +306,18 @@
     return {active: mkOff(s)};
   }
 
-  function mkPos(us, them) {
+  // us, them: string of geisha codes (a-g)
+  // prev: string of length 7 of -0+ for previous scores which are stored in the optional [2]
+  function mkPos(us, them, prev) {
     let pos = initialPosition();
     for (let i = 0; i < 2; i++) {
       for (let k of [us, them][i].split('')) {
         pos[k][i]++;
+      }
+    }
+    if (prev) {
+      for (let i = 0; i < 7; i++) {
+        pos[String.fromCharCode(97 + i)][2] = ({'-': -1, '0': 0, '+': 1})[prev[i]];
       }
     }
     return pos;
