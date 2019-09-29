@@ -1,3 +1,5 @@
+'use strict';
+
 //(function() {
 
   // Board is an object indexed a...g with a pair of numbers indicating "our" played cards and
@@ -6,7 +8,6 @@
     return {a: [0,0], b: [0,0], c: [0,0], d: [0,0], e: [0,0], f: [0,0], g: [0,0]};
   }
 
-  let geisha = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
   let geishaValues = {a: 2, b: 2, c: 2, d: 3, e: 3, f: 4, g: 5};
 
   // Compute heap for position and hand, where a hand is of the form:
@@ -17,11 +18,11 @@
   // (the random rollout opponent ignores it anyway.)
   function heap(pos, hand) {
     let result = {};
-    for (k in geishaValues) {
+    for (let k in geishaValues) {
       let p = pos[k];
       result[k] = geishaValues[k] - p[0] - p[1];
     }
-    for (k of hand.active) {
+    for (let k of hand.active) {
       result[k]--;
     }
     if (hand.discarded) {
@@ -33,7 +34,7 @@
 
   function size(heap) {
     let size = 0;
-    for (k in heap) {
+    for (let k in heap) {
       size += heap[k];
     }
     return size;
@@ -42,7 +43,7 @@
   // Draw a random card from heap, chaning the given heap in
   function draw(heap) {
     let index = rnd(size(heap));
-    for (k in heap) {
+    for (let k in heap) {
       let count = heap[k];
       if (index < count) {
         heap[k]--;
@@ -91,7 +92,7 @@
 
   // opponent chose cards[0] and cards[1], we chose ...[2] and [3]
   function move_offer22(player, position, hand, cards) {
-    [card1, card2, card3, card4] = cards;
+    let [card1, card2, card3, card4] = cards;
     position[card1][1-player]++;
     position[card2][1-player]++;
     position[card3][player]++;
@@ -157,7 +158,6 @@
       let hand = hands[player],
           options = optionsForPlayers[player];
       hands[player].active.unshift(drawFromPile(drawPile));
-      // console.log(`[${player}]: ${random_move(player, position, hand, options)}: ${result(position)}`);
       random_move(player, position, hand, options);
       player = 1 - player;
     }
@@ -174,7 +174,7 @@
   function result(position) {
     let geishaDelta = 0,
         pointDelta = 0;
-    for (k in geishaValues) {
+    for (let k in geishaValues) {
       let p = position[k];
       let s = Math.sign(p[0] - p[1]) || p[2] || 0;
       geishaDelta += s;
